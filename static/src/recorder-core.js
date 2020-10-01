@@ -89,7 +89,7 @@ Recorder.Support=function(){
 var Connect=function(){
 	var ctx=Recorder.Ctx,stream=Recorder.Stream;
 	var media=stream._m=ctx.createMediaStreamSource(stream);
-	var process=stream._p=(ctx.createScriptProcessor||ctx.createJavaScriptNode).call(ctx,Recorder.BufferSize,1,1);//单声道，省的数据处理复杂
+	var process=stream._p=(ctx.createScriptProcessor||ctx.createJavaScriptNode).call(ctx,Recorder.BufferSize,2,2);//单声道，省的数据处理复杂
 	
 	media.connect(process);
 	process.connect(ctx.destination);
@@ -97,18 +97,22 @@ var Connect=function(){
 	var calls=stream._call;
 	process.onaudioprocess=function(e){
 		for(var k0 in calls){//has item
-			var o=e.inputBuffer.getChannelData(0);//块是共享的，必须复制出来
+			var o=e.inputBuffer.getChannelData(0);   //块是共享的，必须复制出来
+			var o2=e.inputBuffer.getChannelData(1);   //块是共享的，必须复制出来			
 			var size=o.length;
-			
-			var pcm=new Int16Array(size);
+
+			var pcm=new Int16Array(2*size);
 			var sum=0;
 			for(var j=0;j<size;j++){//floatTo16BitPCM 
 				var s=Math.max(-1,Math.min(1,o[j]));
 				s=s<0?s*0x8000:s*0x7FFF;
-				pcm[j]=s;
+				pcm[2*j]=s;
+				var s=Math.max(-1,Math.min(1,o2[j]));
+				s=s<0?s*0x8000:s*0x7FFF;
+				pcm[2*j+1]=s;
 				sum+=Math.abs(s);
 			};
-			
+
 			for(var k in calls){
 				calls[k](pcm,sum);
 			};
