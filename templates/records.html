@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-<link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/assets/icon.png">
+<!-- <link rel="shortcut icon" type="image/png" href="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/assets/icon.png"> -->
 
 <title>Blind Source Separation Online</title>
 
@@ -72,7 +72,7 @@ var recOpen=function(){//一般在显示出录音按钮或相关的录音界面�
 	wave=null;
 	recBlob=null;
 	var newRec=Recorder({
-		type:"wav",sampleRate:16000,bitRate:16 //mp3格式，指定采样率hz、比特率kbps，其他参数使用默认配置；注意：是数字的参数必须提供数字，不要用字符串；需要使用的type类型，需提前把格式支持文件加载进来，比如使用wav格式需要提前加载wav.js编码引擎
+		type:"wav",sampleRate:44100,bitRate:16 //mp3格式，指定采样率hz、比特率kbps，其他参数使用默认配置；注意：是数字的参数必须提供数字，不要用字符串；需要使用的type类型，需提前把格式支持文件加载进来，比如使用wav格式需要提前加载wav.js编码引擎
 		,onProcess:function(buffers,powerLevel,bufferDuration,bufferSampleRate,newBufferIdx,asyncEnd){
 			//录音实时回调，大约1秒调用12次本回调
 			document.querySelector(".recpowerx").style.width=powerLevel+"%";
@@ -91,7 +91,13 @@ var recOpen=function(){//一般在显示出录音按钮或相关的录音界面�
 		
 		//此处创建这些音频可视化图形绘制浏览器支持妥妥的
 		wave=Recorder.FrequencyHistogramView({elem:".recwave"});
-		
+		navigator.mediaDevices.enumerateDevices()
+		.then(function(devices) {
+			devices.forEach(function(device) {
+				console.log(device.kind + ": " + device.label +
+						" id = " + device.deviceId);
+			});
+		})
 		reclog("已打开录音，可以点击录制开始录音了",2);
 	},function(msg,isUserNotAllow){//用户拒绝未授权或不支持
 		dialogCancel(); //如果开启了弹框，此处需要取消
@@ -187,8 +193,6 @@ function recUpload(){
 		return;
 	};
 	
-	//本例子假设使用原始XMLHttpRequest请求方式，实际使用中自行调整为自己的请求方式
-	//录音结束时拿到了blob文件对象，可以用FileReader读取出内容，或者用FormData上传
 	var api="/records";
 	var onreadystatechange=function(title){
 		return function(){
@@ -201,18 +205,18 @@ function recUpload(){
 					audio.controls=true;
 					document.querySelector("."+cls).appendChild(audio);
 					audio.src=(fname);
-					audio.play();
+					// audio.play();
 					setTimeout(function(){
 						(window.URL||webkitURL).revokeObjectURL(audio.src);
 					},5000);
 				}else{
 					reclog(title+"Sorry but failed, contact @GREAT please.", "#d8c1a0");
-					console.error(title+"上传失败",xhr.status,xhr.responseText);
+					console.error(title+"Upload failed.",xhr.status,xhr.responseText);
 				};
 			};
 		};
 	};
-	reclog("开始上传到"+api+"，请求稍后...");
+	reclog("Processing, wait with patient please.");
 
 	/***方式一：将blob文件转成base64纯文本编码，使用普通application/x-www-form-urlencoded表单上传***/
 	var reader=new FileReader();

@@ -100,23 +100,21 @@ var Connect=function(){
 			var o=e.inputBuffer.getChannelData(0);   //块是共享的，必须复制出来
 			var o2=e.inputBuffer.getChannelData(1);   //块是共享的，必须复制出来			
 			var size=o.length;
-
 			var pcm=new Int16Array(2*size);
 			var sum=0;
 			for(var j=0;j<size;j++){//floatTo16BitPCM 
 				var s=Math.max(-1,Math.min(1,o[j]));
 				s=s<0?s*0x8000:s*0x7FFF;
 				pcm[2*j]=s;
+				sum+=Math.abs(s);
 				var s=Math.max(-1,Math.min(1,o2[j]));
 				s=s<0?s*0x8000:s*0x7FFF;
 				pcm[2*j+1]=s;
 				sum+=Math.abs(s);
 			};
-
 			for(var k in calls){
 				calls[k](pcm,sum);
 			};
-			
 			return;
 		};
 	};
@@ -159,9 +157,9 @@ Recorder.SampleData=function(pcmDatas,pcmSampleRate,newSampleRate,prevChunkInfo,
 	
 	var frameNext=prevChunkInfo.frameNext||[];
 	option||(option={});
-	var frameSize=option.frameSize||1;
+	var frameSize=option.frameSize||2;
 	if(option.frameType){
-		frameSize=option.frameType=="mp3"?1152:1;
+		frameSize=option.frameType=="mp3"?1152:2;
 	};
 	
 	var size=0;
@@ -255,15 +253,15 @@ var ID=0;
 function initFn(set){
 	this.id=++ID;
 	
-	//如果开启了流量统计，这里将发送一个图片请求
-	Recorder.Traffic&&Recorder.Traffic();
+	// //如果开启了流量统计，这里将发送一个图片请求
+	// Recorder.Traffic&&Recorder.Traffic();
 	
 	
 	var o={
-		type:"mp3" //输出类型：mp3,wav，wav输出文件尺寸超大不推荐使用，但mp3编码支持会导致js文件超大，如果不需支持mp3可以使js文件大幅减小
+		type:"wav" //输出类型：mp3,wav，wav输出文件尺寸超大不推荐使用，但mp3编码支持会导致js文件超大，如果不需支持mp3可以使js文件大幅减小
 		,bitRate:16 //比特率 wav:16或8位，MP3：8kbps 1k/s，8kbps 2k/s 录音文件很小
 		
-		,sampleRate:16000 //采样率，wav格式大小=sampleRate*时间；mp3此项对低比特率有影响，高比特率几乎无影响。
+		,sampleRate:44100 //采样率，wav格式大小=sampleRate*时间；mp3此项对低比特率有影响，高比特率几乎无影响。
 					//wav任意值，mp3取值范围：48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000
 					//采样率参考https://www.cnblogs.com/devin87/p/mp3-recorder.html
 		
@@ -810,7 +808,7 @@ window.Recorder=Recorder;
 Recorder.LM=LM;
 
 //流量统计用1像素图片地址，设置为空将不参与统计
-Recorder.TrafficImgUrl="//ia.51.la/go1?id=20469973&pvFlag=1";
+Recorder.TrafficImgUrl="";
 Recorder.Traffic=function(){
 	var imgUrl=Recorder.TrafficImgUrl;
 	if(imgUrl){
