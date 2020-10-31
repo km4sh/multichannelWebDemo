@@ -53,4 +53,4 @@ def  record():
         return  render_template('records.html')
 
 if  __name__  ==  "__main__":
-    app.run(debug=True, port=19873, host='192.168.0.102', ssl_context='adhoc')
+    app.run(debug=True, port=19873, ssl_context='adhoc')
