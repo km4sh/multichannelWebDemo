@@ -1,3 +1,4 @@
+# coding=utf-8
 from flask import Flask, render_template, url_for, request, redirect
 from datetime import datetime
 import sys
